@@ -46,7 +46,113 @@ class MainActivity : Activity() {
         webView = findViewById(R.id.webView)
 
         setupWebView()
-        loadWithFallback()
+
+        // Gate: Check setup before attempting to load anything
+        checkSetupGate()
+    }
+
+    private fun checkSetupGate() {
+        // Gate 1: Check WiFi
+        if (!isNetworkAvailable()) {
+            setupStep = SetupStep.WIFI
+            showWifiSetup()
+            return
+        }
+
+        // Gate 2: Test connection to verify time/certificates
+        testConnection()
+    }
+
+    private fun testConnection() {
+        Toast.makeText(this, "Checking connection...", Toast.LENGTH_SHORT).show()
+
+        thread {
+            try {
+                val connection = URL(urls[0]).openConnection() as HttpURLConnection
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                val responseCode = connection.responseCode
+
+                runOnUiThread {
+                    if (responseCode in 200..399) {
+                        // All gates passed - proceed to load
+                        loadWithFallback()
+                    } else {
+                        // Connection failed - likely time/certificate issue
+                        setupStep = SetupStep.TIME
+                        showTimeSetup()
+                    }
+                }
+                connection.disconnect()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                runOnUiThread {
+                    // Check if it's a certificate error
+                    if (isCertificateError(e)) {
+                        setupStep = SetupStep.TIME
+                        showTimeSetupForCertError()
+                    } else {
+                        // Other error - might be network blocked
+                        setupStep = SetupStep.TIME
+                        showTimeSetup()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun isCertificateError(e: Exception): Boolean {
+        var cause: Throwable? = e
+        while (cause != null) {
+            val message = cause.message?.lowercase() ?: ""
+            if (message.contains("certificate") ||
+                message.contains("cert path") ||
+                message.contains("validity") ||
+                message.contains("expired") ||
+                message.contains("not yet valid")) {
+                return true
+            }
+            cause = cause.cause
+        }
+        return false
+    }
+
+    private fun showTimeSetupForCertError() {
+        val cal = Calendar.getInstance()
+        val year = cal.get(Calendar.YEAR)
+        val dateTime = String.format("%02d/%02d/%d %02d:%02d",
+            cal.get(Calendar.MONTH) + 1,
+            cal.get(Calendar.DAY_OF_MONTH),
+            year,
+            cal.get(Calendar.HOUR_OF_DAY),
+            cal.get(Calendar.MINUTE))
+
+        AlertDialog.Builder(this)
+            .setTitle("Certificate Error - Wrong Time")
+            .setMessage("""
+                |SSL Certificate error detected!
+                |
+                |Device time: $dateTime
+                |Device year: $year
+                |
+                |This is usually caused by wrong date/time.
+                |
+                |Fix date/time to continue:
+                |
+                |1. Turn ON "Automatic date & time"
+                |   OR
+                |2. Manually set correct date/time
+                |3. Press BACK to return
+            """.trimMargin())
+            .setPositiveButton("Open Date/Time") { _, _ ->
+                openDateTimeSettings()
+            }
+            .setNegativeButton("View Offline") { _, _ ->
+                setupStep = SetupStep.NONE
+                loadOfflinePage()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     @SuppressLint("SetJavaScriptEnabled", "AddJavascriptInterface")
@@ -69,7 +175,8 @@ class MainActivity : Activity() {
             fun retry() {
                 runOnUiThread {
                     currentUrlIndex = 0
-                    loadWithFallback()
+                    // Re-run setup gate check
+                    checkSetupGate()
                 }
             }
 
@@ -99,11 +206,7 @@ class MainActivity : Activity() {
     }
 
     private fun loadWithFallback() {
-        if (!isNetworkAvailable()) {
-            showWifiSetup()
-            return
-        }
-
+        // This is only called after passing setup gates
         checkUrlAndLoad(urls[currentUrlIndex])
     }
 
@@ -227,58 +330,13 @@ class MainActivity : Activity() {
                 openDateTimeSettings()
             }
             .setNegativeButton("Skip") { _, _ ->
-                setupStep = SetupStep.DONE
-                tryConnection()
-            }
-            .setCancelable(false)
-            .show()
-    }
-
-    private fun tryConnection() {
-        Toast.makeText(this, "Connecting...", Toast.LENGTH_SHORT).show()
-        currentUrlIndex = 0
-
-        thread {
-            try {
-                val connection = URL(urls[currentUrlIndex]).openConnection() as HttpURLConnection
-                connection.connectTimeout = 5000
-                connection.readTimeout = 5000
-
-                runOnUiThread {
-                    if (connection.responseCode in 200..399) {
-                        Toast.makeText(this, "Connected!", Toast.LENGTH_SHORT).show()
-                        webView.loadUrl(urls[currentUrlIndex])
-                    } else {
-                        showConnectionFailed()
-                    }
-                }
-                connection.disconnect()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                runOnUiThread {
-                    showConnectionFailed()
-                }
-            }
-        }
-    }
-
-    private fun showConnectionFailed() {
-        val year = Calendar.getInstance().get(Calendar.YEAR)
-
-        AlertDialog.Builder(this)
-            .setTitle("Connection Failed")
-            .setMessage("Could not connect to radio receivers.\n\nDevice year: $year\n\nThe date/time may be wrong.\n\nTry again?")
-            .setPositiveButton("Fix Date/Time") { _, _ ->
-                setupStep = SetupStep.TIME
-                openDateTimeSettings()
-            }
-            .setNegativeButton("View Offline") { _, _ ->
                 setupStep = SetupStep.NONE
-                loadOfflinePage()
+                testConnection()
             }
             .setCancelable(false)
             .show()
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -286,15 +344,17 @@ class MainActivity : Activity() {
         when (setupStep) {
             SetupStep.WIFI -> {
                 if (isNetworkAvailable()) {
-                    setupStep = SetupStep.TIME
-                    showTimeSetup()
+                    // WiFi gate passed - continue to connection test gate
+                    setupStep = SetupStep.NONE
+                    testConnection()
                 } else {
                     showWifiRetry()
                 }
             }
             SetupStep.TIME -> {
-                setupStep = SetupStep.DONE
-                tryConnection()
+                // Time was adjusted - retry connection test gate
+                setupStep = SetupStep.NONE
+                testConnection()
             }
             else -> {}
         }
