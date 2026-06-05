@@ -9,8 +9,12 @@ Android app wrapper for shortwave radio WebSDR receivers with automatic fallback
   - rx.skywavelinux.com (primary)
   - map.kiwisdr.com (fallback 1)
   - rx-tx.info/map-sdr-points (fallback 2)
+- **Offline page** - when all online sources fail, displays a styled offline page with:
+  - Explanation of what the app does
+  - Connection troubleshooting guide
+  - SDR receiver information
+  - Retry connection button (JavaScript interface)
 - **Network connectivity detection** with WiFi status checking
-- **Localized guidance screens** (English & Chinese) for restricted network environments
 - **Optimized for car head units** - targets Android 8.0+ with 32-bit ARM support
 - **Hardware acceleration** enabled for smooth SDR waterfall displays
 - **Back navigation** through WebView history
@@ -61,13 +65,16 @@ This app requires internet connectivity to access WebSDR receivers:
   - Mixed content compatibility mode (for HTTP SDR receivers)
   - Hardware acceleration on
 
-## Connectivity Guidance
+## Offline Mode
 
-If all fallback URLs fail, the app displays localized instructions for:
-- VPN setup (Astrill, ExpressVPN, Surfshark)
-- Alternative circumvention tools (Shadowsocks, V2Ray, Trojan)
-- Mobile hotspot workarounds
-- Domestic KiwiSDR receivers (for users in China)
+When internet connectivity fails or all SDR map URLs are unreachable, the app loads an offline HTML page from `assets/offline.html` that includes:
+- Description of what shortwave SDR receivers are
+- WiFi and network troubleshooting steps
+- VPN/proxy guidance for restricted networks
+- JavaScript-enabled retry button that reconnects to online sources
+- Dark theme optimized for car dashboard displays
+
+This approach mirrors the offline fallback pattern used in production car head unit apps.
 
 ## License
 
