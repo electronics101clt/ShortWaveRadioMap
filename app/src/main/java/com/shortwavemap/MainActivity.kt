@@ -8,23 +8,14 @@ import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import android.webkit.*
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 import kotlin.concurrent.thread
 
 class MainActivity : Activity() {
 
     private lateinit var webView: WebView
-    private lateinit var errorLayout: View
-    private lateinit var errorText: TextView
-    private lateinit var retryButton: Button
-    private lateinit var progressBar: ProgressBar
 
     private val urls = arrayOf(
         "https://rx.skywavelinux.com",
@@ -39,22 +30,12 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         webView = findViewById(R.id.webView)
-        errorLayout = findViewById(R.id.errorLayout)
-        errorText = findViewById(R.id.errorText)
-        retryButton = findViewById(R.id.retryButton)
-        progressBar = findViewById(R.id.progressBar)
 
         setupWebView()
-
-        retryButton.setOnClickListener {
-            currentUrlIndex = 0
-            loadWithFallback()
-        }
-
         loadWithFallback()
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "AddJavascriptInterface")
     private fun setupWebView() {
         webView.settings.apply {
             javaScriptEnabled = true
@@ -65,16 +46,23 @@ class MainActivity : Activity() {
             setSupportZoom(true)
             builtInZoomControls = true
             displayZoomControls = false
+            allowFileAccess = true
         }
+
+        // Add JavaScript interface for offline page retry button
+        webView.addJavascriptInterface(object {
+            @JavascriptInterface
+            fun retry() {
+                runOnUiThread {
+                    currentUrlIndex = 0
+                    loadWithFallback()
+                }
+            }
+        }, "RetryConnection")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 return false
-            }
-
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                progressBar.visibility = View.GONE
             }
 
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
@@ -90,13 +78,9 @@ class MainActivity : Activity() {
 
     private fun loadWithFallback() {
         if (!isNetworkAvailable()) {
-            showError(getString(R.string.no_network))
+            loadOfflinePage()
             return
         }
-
-        errorLayout.visibility = View.GONE
-        webView.visibility = View.VISIBLE
-        progressBar.visibility = View.VISIBLE
 
         checkUrlAndLoad(urls[currentUrlIndex])
     }
@@ -132,15 +116,12 @@ class MainActivity : Activity() {
                 checkUrlAndLoad(urls[currentUrlIndex])
             }, 1000)
         } else {
-            showError(getConnectionGuidance())
+            loadOfflinePage()
         }
     }
 
-    private fun showError(message: String) {
-        progressBar.visibility = View.GONE
-        webView.visibility = View.GONE
-        errorLayout.visibility = View.VISIBLE
-        errorText.text = message
+    private fun loadOfflinePage() {
+        webView.loadUrl("file:///android_asset/offline.html")
     }
 
     private fun isNetworkAvailable(): Boolean {
@@ -148,15 +129,6 @@ class MainActivity : Activity() {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
-
-    private fun getConnectionGuidance(): String {
-        val locale = Locale.getDefault().language
-        return if (locale == "zh") {
-            getString(R.string.connection_help_zh)
-        } else {
-            getString(R.string.connection_help_en)
-        }
     }
 
     override fun onBackPressed() {

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShortWave Radio Map - Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #ff6600;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin: 30px 0 15px 0;
+            color: #ffaa66;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .status-box {
+            background: rgba(255, 102, 0, 0.1);
+            border: 2px solid #ff6600;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .solutions {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .solutions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .solutions li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .solutions li:before {
+            content: "📡";
+            position: absolute;
+            left: 0;
+        }
+
+        .button {
+            display: inline-block;
+            background: #ff6600;
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 10px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #ff8833;
+        }
+
+        .button:active {
+            background: #cc5500;
+        }
+
+        .about {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tech-info {
+            font-size: 14px;
+            opacity: 0.6;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 24px; }
+            h2 { font-size: 18px; }
+            p { font-size: 14px; }
+            .button { padding: 12px 24px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📻</div>
+
+        <h1>ShortWave Radio Map</h1>
+
+        <div class="status-box">
+            <p style="font-size: 18px; font-weight: bold;">⚠️ No Internet Connection</p>
+            <p>This app needs an active internet connection to access live shortwave radio receivers around the world.</p>
+        </div>
+
+        <h2>What This App Does</h2>
+        <p>ShortWave Radio Map connects you to a global network of <strong>KiwiSDR and WebSDR receivers</strong> - real shortwave radio receivers (1-30 MHz) operated by radio enthusiasts worldwide. You can tune into live broadcasts, explore the radio spectrum, and listen to stations from across the globe.</p>
+
+        <h2>How to Get Connected</h2>
+        <div class="solutions">
+            <ul>
+                <li><strong>Check WiFi:</strong> Ensure your device is connected to a WiFi network with internet access</li>
+                <li><strong>Router Connection:</strong> Verify your WiFi router has an active internet connection</li>
+                <li><strong>Mobile Hotspot:</strong> Connect to a phone's mobile hotspot if WiFi is unavailable</li>
+                <li><strong>Network Restrictions:</strong> If in a restricted network environment, you may need:
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>VPN service (Astrill, ExpressVPN, Surfshark)</li>
+                        <li>Proxy or circumvention tools (Shadowsocks, V2Ray)</li>
+                        <li>Mobile hotspot from a device with these tools</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <button class="button" onclick="window.RetryConnection.retry()">🔄 Retry Connection</button>
+
+        <div class="about">
+            <h2>About SDR Receivers</h2>
+            <p>This app is a wrapper for online SDR (Software Defined Radio) maps that show real radio receivers. When you connect, you'll see a world map where you can click on any receiver to tune into that location's radio spectrum in real-time.</p>
+
+            <div class="tech-info">
+                <p><strong>Supported Services:</strong></p>
+                <p>rx.skywavelinux.com • map.kiwisdr.com • rx-tx.info</p>
+                <p style="margin-top: 15px;"><strong>Frequency Range:</strong> 1-30 MHz (Shortwave HF)</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
