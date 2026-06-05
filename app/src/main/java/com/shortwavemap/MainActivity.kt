@@ -1,6 +1,7 @@
 package com.shortwavemap
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -12,13 +13,12 @@ import android.webkit.*
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
 import kotlin.concurrent.thread
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
 
     private lateinit var webView: WebView
     private lateinit var errorLayout: View
