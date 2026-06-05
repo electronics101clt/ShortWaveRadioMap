@@ -92,3 +92,5 @@ hs_err_pid*
 
 # Signing files
 .signing/
+*.keystore
+*.jks
