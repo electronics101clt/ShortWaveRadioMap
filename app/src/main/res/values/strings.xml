@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ShortWave Radio Map</string>
+    <string name="retry">Retry</string>
+    <string name="no_network">No network connection available.\n\nPlease check:\n• WiFi is enabled\n• Router is connected\n• Internet connection is active</string>
+
+    <string name="connection_help_en">Cannot reach shortwave radio map servers.\n\nPossible solutions:\n\n• Check your WiFi connection\n• Try connecting to a mobile hotspot with VPN enabled\n• Some receivers may be temporarily offline\n• Network restrictions may be blocking access\n\nIf you\'re in a restricted network environment, connect through:\n• VPN (Astrill, ExpressVPN, Surfshark)\n• Shadowsocks / V2Ray / Trojan\n• Mobile hotspot from a phone with circumvention tools</string>
+
+    <string name="connection_help_zh">无法连接到短波电台地图服务器。\n\n可能的解决方案：\n\n• 检查WiFi连接\n• 尝试连接已启用VPN的手机热点\n• 某些接收器可能暂时离线\n• 网络限制可能阻止访问\n\n如果您处于受限网络环境，请通过以下方式连接：\n• VPN（Astrill、ExpressVPN、Surfshark）\n• Shadowsocks / V2Ray / Trojan\n• 来自已安装翻墙工具的手机热点\n\n注意：本应用不提供翻墙功能，需要您自行准备网络工具。</string>
+</resources>

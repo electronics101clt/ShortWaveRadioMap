@@ -1,0 +1,2 @@
+rootProject.name = "ShortWaveRadioMap"
+include ':app'
